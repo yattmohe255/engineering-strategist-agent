@@ -1,4 +1,7 @@
-import openai
+import os
+from openai import OpenAI
+
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 def generate_ideas(problem_description, area="General", constraints="None"):
     prompt = f"""
@@ -27,8 +30,8 @@ Generate:
 
 Structure clearly in markdown format.
 """
-    response = openai.ChatCompletion.create(
+    chat_completion = client.chat.completions.create(
         model="gpt-4",
         messages=[{"role": "user", "content": prompt}]
     )
-    return response['choices'][0]['message']['content']
+    return chat_completion.choices[0].message.content

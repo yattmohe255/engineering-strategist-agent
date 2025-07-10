@@ -1,23 +1,31 @@
-def fill_fel_template(project_name, opportunity, risks, roi):
-    return f"""
-# FEL Summary – {project_name}
+import os
+from openai import OpenAI
 
-**Opportunity Description:**  
-{opportunity}
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
-**Known Risks or Barriers:**  
-{risks}
+def fill_fel_template(name, opportunity, risks, roi):
+    prompt = f"""
+Create a concise FEL (Front-End Loading) style project summary for a food manufacturing automation initiative.
 
-**Estimated ROI:**  
-{roi}
+Project Name: {name}
+Opportunity: {opportunity}
+Risks/Barriers: {risks}
+Estimated ROI or Payback: {roi}
 
-**Key Assumptions:**  
-- Layout is feasible for selected tech  
-- Support from plant stakeholders will be secured  
-- Integration timeline matches corporate targets  
+Output format:
+1. Executive Summary
+2. Problem Statement
+3. Proposed Solution (both traditional and advanced automation ideas)
+4. Risk Mitigation
+5. Estimated ROI / Financial Justification
+6. Strategic Fit
+7. Open Questions
 
-**Next Steps:**  
-1. Validate current process baseline  
-2. Engage automation vendors  
-3. Review scope with Operations, QA, Engineering  
+Format in markdown.
 """
+
+    chat_completion = client.chat.completions.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return chat_completion.choices[0].message.content
