@@ -1,5 +1,8 @@
 import streamlit as st
 from modules import ideation, feasibility, planner, stakeholders, memory
+from dotenv import load_dotenv
+load_dotenv()
+
 
 st.set_page_config(page_title="Engineering Strategist Agent", layout="wide")
 
