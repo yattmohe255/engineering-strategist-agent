@@ -10,7 +10,7 @@ def generate_ideas(user_input, area, constraints):
 You are a highly experienced automation design engineer focused on warehouse and logistics systems in food manufacturing.
 
 Given the following opportunity:
-"{user_input}"
+{user_input}
 
 Plant Area: {area}
 Known Constraints: {constraints}
