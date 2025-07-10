@@ -55,20 +55,21 @@ Please respond with refined options or updated recommendations based on their qu
     return response.choices[0].message.content
 
 def parse_options(response_text):
-    lines = response_text.strip().split("\n")
-    options = []
-    current = ""
+    """
+    Splits the markdown response into distinct options for selection.
+    Recognizes numbered, bulleted, and header-style idea blocks.
+    """
+    blocks = []
+    current = []
 
-    for line in lines:
-        if line.startswith("- ") or line.startswith("1.") or line.startswith("## "):
+    for line in response_text.splitlines():
+        if line.strip().startswith(("1.", "2.", "3.", "4.", "5.", "6.", "- ", "## ")):
             if current:
-                options.append(current.strip())
-                current = ""
-            current = line
-        else:
-            current += "\n" + line
+                blocks.append("\n".join(current).strip())
+                current = []
+        current.append(line)
 
     if current:
-        options.append(current.strip())
+        blocks.append("\n".join(current).strip())
 
-    return options
+    return blocks
