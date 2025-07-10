@@ -1,11 +1,10 @@
-import streamlit as st
 from modules import ideation, feasibility, planner, stakeholders, memory
+import streamlit as st
 from dotenv import load_dotenv
 load_dotenv()
 
 
 st.set_page_config(page_title="Engineering Strategist Agent", layout="wide")
-
 st.title("🤖 Engineering Strategist Agent")
 st.markdown("Support your automation projects from idea to startup with structured guidance, clear deliverables, and stakeholder awareness.")
 
@@ -21,14 +20,40 @@ workflow = st.sidebar.radio("Choose a focus area:", [
 # --- IDEATION ---
 if workflow == "🔍 Ideation & Opportunity Framing":
     st.header("Early-Stage Brainstorming")
+
+    if "ideation_history" not in st.session_state:
+        st.session_state.ideation_history = []
+    if "selected_idea" not in st.session_state:
+        st.session_state.selected_idea = None
+
     user_input = st.text_area("🔍 Describe the project opportunity or pain point", height=150)
     area = st.text_input("🏭 Plant Area or Context", value="General")
     constraints = st.text_input("⚠️ Known Constraints", value="")
+
     if st.button("💡 Generate Ideas"):
         with st.spinner("Thinking..."):
             output = ideation.generate_ideas(user_input, area, constraints)
+            st.session_state.ideation_output = output
+            ideas = ideation.parse_options(output)
+            st.session_state.ideation_history = ideas
             st.success("Done!")
-            st.markdown(output)
+
+    if "ideation_output" in st.session_state:
+        st.subheader("🧠 Initial AGV/AMR Suggestions")
+        st.markdown(st.session_state.ideation_output)
+
+        ideas = st.session_state.ideation_history
+        selected = st.multiselect("💡 Select one or more ideas to refine:", options=ideas)
+
+        if selected:
+            st.session_state.selected_idea = "\n\n".join(selected)
+            followup = st.text_area("🔧 Ask a follow-up question or request refinement", key="refine_input")
+
+            if st.button("🔁 Refine Selected Ideas"):
+                with st.spinner("Refining..."):
+                    refined_output = ideation.refine_ideas(st.session_state.selected_idea, followup)
+                    st.markdown("### 🔄 Refined Output")
+                    st.markdown(refined_output)
 
 # --- FEASIBILITY ---
 elif workflow == "📊 Feasibility & FEL Prep":

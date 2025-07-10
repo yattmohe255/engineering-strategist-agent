@@ -34,3 +34,41 @@ Respond in markdown format.
         messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content
+
+def refine_ideas(selected_idea_text, followup):
+    prompt = f"""
+You previously suggested the following AGV/AMR automation idea(s):
+
+{selected_idea_text}
+
+The user now asks:
+
+{followup}
+
+Please respond with refined options or updated recommendations based on their question or refinement. Keep the focus on AGV/AMR solutions only.
+"""
+
+    response = client.chat.completions.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": prompt}]
+    )
+    return response.choices[0].message.content
+
+def parse_options(response_text):
+    lines = response_text.strip().split("\n")
+    options = []
+    current = ""
+
+    for line in lines:
+        if line.startswith("- ") or line.startswith("1.") or line.startswith("## "):
+            if current:
+                options.append(current.strip())
+                current = ""
+            current = line
+        else:
+            current += "\n" + line
+
+    if current:
+        options.append(current.strip())
+
+    return options
