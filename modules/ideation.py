@@ -12,7 +12,7 @@ You are a highly experienced automation design engineer focused on warehouse and
 Given the following opportunity:
 {user_input}
 
-Plant Area: {area}
+Plant Area: {area}  
 Known Constraints: {constraints}
 
 Only consider **AGVs or AMRs** for this application. Do not include conveyors, ASRS, or other general automation technologies.
@@ -26,7 +26,7 @@ Return:
   - Compatible vendors (E80, JBT, GrayOrange)
   - Estimated complexity (Low/Medium/High)
 
-Return in markdown format.
+Respond in markdown format.
 """
 
     response = client.chat.completions.create(
