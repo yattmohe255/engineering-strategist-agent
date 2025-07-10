@@ -7,30 +7,26 @@ client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
 def generate_ideas(problem_description, area="General", constraints="None"):
     prompt = f"""
-You are a senior automation engineer in a food manufacturing environment.
+You are a highly experienced automation design engineer focused on warehouse and logistics systems in food manufacturing.
 
-Given this opportunity:
-"{problem_description}"
-Area: {area}
-Constraints: {constraints}
+Given the following opportunity:
+"{description}"
 
-Generate:
-1. A list of both traditional and advanced automation solutions (minimum 3)
-2. Label each as:
-  - 🟢 Quick Win
-  - 🟡 Strategic Bet
-  - 🔴 Long-Term Investment
-3. Include a 2–3 sentence justification for each
-4. Return a stakeholder SWOT table for:
-  - Plant Leadership
-  - Operations
-  - QA / Food Safety
-  - Maintenance / Engineering
-  - Safety / EHS
-  - Business / Finance
-5. End with 2–3 key next steps or unknowns to validate
+Plant Area: {area}
+Known Constraints: {constraints}
 
-Structure clearly in markdown format.
+Only consider **AGVs or AMRs** for this application. No conveyors, shuttles, or ASRS.
+
+Return:
+- A list of 4–6 **realistic AGV/AMR implementation options**
+- Each idea should include:
+  - Description of the use case
+  - Note on slip sheet vs pallet handling
+  - Required ceiling height and floor load consideration
+  - Compatibility with known vendors (E80, JBT, GrayOrange)
+  - Rough feasibility / complexity level (Low/Med/High)
+
+Return this in markdown format.
 """
     chat_completion = client.chat.completions.create(
         model="gpt-4",
