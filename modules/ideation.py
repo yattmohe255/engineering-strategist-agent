@@ -1,53 +1,43 @@
+import os
 from openai import OpenAI
 from dotenv import load_dotenv
-import os
+import re
 
 load_dotenv()
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
-def generate_ideas(user_input, area, constraints):
+def generate_ideas(description, area, constraints):
     prompt = f"""
-You are a highly experienced automation design engineer focused on warehouse and logistics systems in food manufacturing.
+You are an expert in industrial automation and warehouse systems. The user is an engineer designing a new automation solution using AGVs or AMRs. Given the following details:
 
-Given the following opportunity:
-{user_input}
+Project Description:
+{description}
 
-Plant Area: {area}  
-Known Constraints: {constraints}
+Plant Area or Context:
+{area}
 
-Only consider **AGVs or AMRs** for this application. Do not include conveyors, ASRS, or other general automation technologies.
+Constraints:
+{constraints}
 
-Return:
-- A list of 4–6 realistic AGV/AMR implementation options
-- Each should include:
-  - Description of the use case
-  - Handling method (pallet vs slip sheet)
-  - Notes on ceiling height & floor load feasibility
-  - Compatible vendors (E80, JBT, GrayOrange)
-  - Estimated complexity (Low/Medium/High)
-
-Respond in markdown format.
+Provide a list of 3–5 distinct automation concepts. Each idea should be clearly titled (e.g., '1. Fork AMR for Slip Sheet Delivery'), with a brief explanation, key benefits, and any risks. Avoid generic answers. These ideas should reflect real engineering considerations like space limits, hygiene zones, load handling types, etc.
 """
-
     response = client.chat.completions.create(
         model="gpt-4",
         messages=[{"role": "user", "content": prompt}]
     )
     return response.choices[0].message.content
 
-def refine_ideas(selected_idea_text, followup):
+def refine_ideas(selected_ideas, question):
     prompt = f"""
-You previously suggested the following AGV/AMR automation idea(s):
+The user has selected these ideas for refinement:
 
-{selected_idea_text}
+{selected_ideas}
 
-The user now asks:
+They also asked this follow-up question or clarification:
+\"{question}\"
 
-{followup}
-
-Please respond with refined options or updated recommendations based on their question or refinement. Keep the focus on AGV/AMR solutions only.
+Please refine, expand, or iterate on the selected ideas based on the user’s input. Respond in markdown with clear headers.
 """
-
     response = client.chat.completions.create(
         model="gpt-4",
         messages=[{"role": "user", "content": prompt}]
@@ -56,20 +46,9 @@ Please respond with refined options or updated recommendations based on their qu
 
 def parse_options(response_text):
     """
-    Splits the markdown response into distinct options for selection.
-    Recognizes numbered, bulleted, and header-style idea blocks.
+    Extract only the top-level idea headers from the markdown-formatted response.
+    Returns a list like: '1. Fork AMR for Slip Sheet Delivery'
     """
-    blocks = []
-    current = []
-
-    for line in response_text.splitlines():
-        if line.strip().startswith(("1.", "2.", "3.", "4.", "5.", "6.", "- ", "## ")):
-            if current:
-                blocks.append("\n".join(current).strip())
-                current = []
-        current.append(line)
-
-    if current:
-        blocks.append("\n".join(current).strip())
-
-    return blocks
+    pattern = re.compile(r"^\\d+\\.\\s+.+")  # Match numbered headers only
+    options = [line.strip() for line in response_text.splitlines() if pattern.match(line)]
+    return options
